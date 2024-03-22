@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA to mRNA to Protein Transcriber</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            box-shadow: 10px 10px 20px #d0d0d0, -10px -10px 20px #ffffff;
+            padding: 20px;
+            width: 80%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: inset 5px 5px 10px #d0d0d0, inset -5px -5px 10px #ffffff;
+            resize: none;
+            /* Prevent resizing */
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        p {
+            color: #ff0000;
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>DNA to mRNA to Protein Transcriber</h2>
+        <label for="inputSequence">Input DNA (3'-5') Sequence:</label>
+        <textarea id="inputSequence" rows="4" cols="50"
+            oninput="this.value = this.value.toUpperCase(); transcriber();"></textarea><br>
+        <label for="outputSequence">mRNA Sequence:</label>
+        <textarea id="outputSequence" rows="4" cols="50" readonly></textarea>
+        <button onclick="copyMRNA()" id="copyButton" disabled>Copy mRNA</button><br>
+        <label for="proteinSequence">Protein Sequence:</label>
+        <textarea id="proteinSequence" rows="4" cols="50" readonly></textarea>
+        <p id="errorMessage">Invalid DNA sequence. Only A, T, G, and C are allowed.</p>
+    </div>
+
+    <script>
+        function transcriber() {
+            const inputSequence = document.getElementById('inputSequence').value;
+            let outputSequence = '';
+
+            const isValidSequence = /^[ATGC]*$/.test(inputSequence);
+            if (!isValidSequence) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('outputSequence').value = '';
+                document.getElementById('copyButton').disabled = true;
+                document.getElementById('proteinSequence').value = '';
+                return;
+            } else {
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('copyButton').disabled = false;
+            }
+
+            for (let i = 0; i < inputSequence.length; i++) {
+                let base = inputSequence[i].toUpperCase(); // Convert to uppercase again, just in case
+                switch (base) {
+                    case 'A':
+                        outputSequence += 'U';
+                        break;
+                    case 'T':
+                        outputSequence += 'A';
+                        break;
+                    case 'C':
+                        outputSequence += 'G';
+                        break;
+                    case 'G':
+                        outputSequence += 'C';
+                        break;
+                    default:
+                        outputSequence += 'X'; // Use 'X' for unrecognized bases
+                }
+            }
+
+            document.getElementById('outputSequence').value = outputSequence;
+            translateProtein(outputSequence);
+        }
+
+        function copyMRNA() {
+            const outputSequence = document.getElementById('outputSequence');
+            outputSequence.select();
+            document.execCommand('copy');
+        }
+
+        function translateProtein(mRNA) {
+            const codons = mRNA.match(/.{1,3}/g);
+            const proteinSequence = codons.map(codon => {
+                switch (codon) {
+                    case 'UUU':
+                    case 'UUC':
+                        return 'Phe';
+                    case 'UUA':
+                    case 'UUG':
+                    case 'CUU':
+                    case 'CUC':
+                    case 'CUA':
+                    case 'CUG':
+                        return 'Leu';
+                    case 'AUU':
+                    case 'AUC':
+                    case 'AUA':
+                        return 'Ile';
+                    case 'AUG':
+                        return 'Met';
+                    case 'GUU':
+                    case 'GUC':
+                    case 'GUA':
+                    case 'GUG':
+                        return 'Val';
+                    case 'UCU':
+                    case 'UCC':
+                    case 'UCA':
+                    case 'UCG':
+                        return 'Ser';
+                    case 'CCU':
+                    case 'CCC':
+                    case 'CCA':
+                    case 'CCG':
+                        return 'Pro';
+                    case 'ACU':
+                    case 'ACC':
+                    case 'ACA':
+                    case 'ACG':
+                        return 'Thr';
+                    case 'GCU':
+                    case 'GCC':
+                    case 'GCA':
+                    case 'GCG':
+                        return 'Ala';
+                    case 'UAU':
+                    case 'UAC':
+                        return 'Tyr';
+                    case 'CAU':
+                    case 'CAC':
+                        return 'His';
+                    case 'CAA':
+                    case 'CAG':
+                        return 'Gln';
+                    case 'AAU':
+                    case 'AAC':
+                        return 'Asn';
+                    case 'AAA':
+                    case 'AAG':
+                        return 'Lys';
+                    case 'GAU':
+                    case 'GAC':
+                        return 'Asp';
+                    case 'GAA':
+                    case 'GAG':
+                        return 'Glu';
+                    case 'UGU':
+                    case 'UGC':
+                        return 'Cys';
+                    case 'UGG':
+                        return 'Trp';
+                    case 'CGU':
+                    case 'CGC':
+                    case 'CGA':
+                    case 'CGG':
+                    case 'AGA':
+                    case 'AGG':
+                        return 'Arg';
+                    case 'AGU':
+                    case 'AGC':
+                        return 'Ser';
+                    case 'GGU':
+                    case 'GGC':
+                    case 'GGA':
+                    case 'GGG':
+                        return 'Gly';
+                    case 'UAA':
+                    case 'UAG':
+                    case 'UGA':
+                        return 'Stop';
+                    default:
+                        return 'X'; // Use 'X' for unrecognized codons
+                }
+            });
+
+            document.getElementById('proteinSequence').value = proteinSequence.join(' ');
+        }
+
+    </script>
+</body>
+
+</html>
